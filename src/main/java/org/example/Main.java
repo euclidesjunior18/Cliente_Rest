@@ -3,7 +3,9 @@ package org.example;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
+import org.example.model.Pessoa;
 import org.example.model.Produto;
+import org.example.service.PessoaClient;
 import org.example.service.ProdutoClient;
 
 import java.math.BigDecimal;
@@ -11,33 +13,33 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        ProdutoClient produtoClient = Feign.builder()
+        PessoaClient pessoaClient = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
-                .target(ProdutoClient.class, "http://localhost:8080");
+                .target(PessoaClient.class, "http://localhost:8080");
 
-        Produto notebook = Produto.builder()
-                .id(1l)
-                .descricao("Vostro")
-                .preco(BigDecimal.valueOf(4500))
-                .marca("Dell")
+        Pessoa pessoaExample = Pessoa.builder()
+                .id(Long.valueOf(66))
+                .nome("Mariazinha")
+                .sexo('F')
+                .rg(12345678)
                 .build();
 
-        Produto produtoCadastrado = produtoClient.criarProduto(notebook);
-        System.out.println(String.format("org.example.model.Produto %s cadastrado com sucesso.", produtoCadastrado.getDescricao()));
+        Pessoa pessoaCadastrada = pessoaClient.criarPessoa(pessoaExample);
+        System.out.println(String.format("org.example.model.Pessoa %s cadastrada com sucesso.", pessoaCadastrada.getNome()));
 
-        produtoCadastrado = produtoClient.produtoComId(1l);
-        System.out.println(String.format("GET %s", produtoCadastrado.toString()));
+        pessoaCadastrada = pessoaClient.pessoaComId(Long.valueOf(66));
+        System.out.println(String.format("GET %s", pessoaCadastrada.toString()));
 
-        Produto notebookNovoPreco = notebook.withPreco(BigDecimal.valueOf(5500));
-        produtoCadastrado = produtoClient.atualizarProduto(notebookNovoPreco);
-        System.out.println(String.format("PUT %s", produtoCadastrado));
+        pessoaExample.setNome("Joaozinho");
+        pessoaExample = pessoaClient.atualizarPessoa(pessoaExample);
+        System.out.println(String.format("PUT %s", pessoaExample));
 
-        List<Produto> produtos = produtoClient.todosProdutos();
-        for (Produto produto : produtos) {
-            System.out.println(produto);
+        List<Pessoa> pessoas = PessoaClient.todasPessoas();
+        for (Pessoa pessoa : pessoas) {
+            System.out.println(pessoa);
         }
 
-        produtoClient.deleteProdutoComId(1l);
+        pessoaClient.deletePessoaComId(Long.valueOf(66));
     }
 }
